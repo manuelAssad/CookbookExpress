@@ -1,0 +1,1 @@
+ssh -i "cookbook-aws.pem" ubuntu@ec2-34-230-30-99.compute-1.amazonaws.com
