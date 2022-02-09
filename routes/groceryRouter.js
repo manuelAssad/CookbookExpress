@@ -4,6 +4,8 @@ const groceryRouter = express.Router();
 const Grocery = require("../models/groceries");
 const authenticate = require("../authenticate");
 
+const cors = require("./cors");
+
 groceryRouter
   .route("/")
   .all((req, res, next) => {
@@ -11,7 +13,8 @@ groceryRouter
     res.setHeader("Content-Type", "text/plain");
     next();
   })
-  .get((req, res) => {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .get(cors.cors, (req, res) => {
     Grocery.find()
       .then((groceries) => {
         res.statusCode = 200;
