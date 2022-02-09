@@ -35,6 +35,7 @@ groceryRouter
         res.json(grocery);
       })
       .catch((err) => {
+        console.log(err);
         next(err);
       });
   })
