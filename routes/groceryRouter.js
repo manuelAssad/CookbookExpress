@@ -13,8 +13,11 @@ groceryRouter
     res.setHeader("Content-Type", "text/plain");
     next();
   })
-  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .options(cors.cors, (req, res) => {
+    res.sendStatus(200);
+  })
   .get(cors.corsWithOptions, (req, res) => {
+    // res.header("Access-Control-Allow-Origin", "*");
     Grocery.find()
       .then((groceries) => {
         res.statusCode = 200;
@@ -23,21 +26,23 @@ groceryRouter
       })
       .catch((err) => next(err));
   })
-  .post(authenticate.verifyUser, (req, res, next) => {
+  .post(cors.corsWithOptions, (req, res, next) => {
     Grocery.create(req.body)
       .then((grocery) => {
-        console.log("Grocery Created ", grocery);
+        console.log("Grocery Created", grocery);
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.json(grocery);
       })
-      .catch((err) => next(err));
+      .catch((err) => {
+        next(err);
+      });
   })
   .put((req, res) => {
     res.statusCode = 403;
     res.end("PUT operation not supported on /groceries");
   })
-  .delete((req, res, next) => {
+  .delete(cors.corsWithOptions, (req, res, next) => {
     Grocery.deleteMany()
       .then((response) => {
         res.statusCode = 200;
