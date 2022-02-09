@@ -14,7 +14,7 @@ groceryRouter
     next();
   })
   .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-  .get(cors.cors, (req, res) => {
+  .get(cors.corsWithOptions, (req, res) => {
     Grocery.find()
       .then((groceries) => {
         res.statusCode = 200;
