@@ -11,6 +11,13 @@ const config = require("./config");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 const groceryRouter = require("./routes/groceryRouter");
+const groceryCategoryRouter = require("./routes/groceryCategoryRouter");
+const groceryInstanceRouter = require("./routes/groceryInstanceRouter");
+const customImageRouter = require("./routes/customImageRouter");
+const recipeRouter = require("./routes/recipeRouter");
+const recipeCategoryRouter = require("./routes/recipeCategoryRouter");
+const recipeIngredientRouter = require("./routes/recipeIngredientRouter");
+const recipePrepStepRouter = require("./routes/recipePrepStepRouter");
 
 var app = express();
 
@@ -46,6 +53,13 @@ app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
 app.use("/groceries", groceryRouter);
+app.use("/grocery-instances", groceryInstanceRouter);
+app.use("/grocery-categories", groceryCategoryRouter);
+app.use("/custom-images", customImageRouter);
+app.use("/recipes", recipeRouter);
+app.use("/recipe-categories", recipeCategoryRouter);
+app.use("/recipe-ingredients", recipeIngredientRouter);
+app.use("/recipe-prep-steps", recipePrepStepRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

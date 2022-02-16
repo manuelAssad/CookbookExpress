@@ -8,6 +8,16 @@ const groceriesSchema = new Schema(
       required: true,
       unique: true,
     },
+    default_image: {
+      type: String,
+      default: "default.jpg",
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "GroceryCategory",
+      required: true,
+    },
+    custom_images: [{ type: Schema.Types.ObjectId, ref: "CustomImage" }],
   },
   {
     timestamps: true,

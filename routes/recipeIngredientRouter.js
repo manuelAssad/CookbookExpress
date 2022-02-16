@@ -1,12 +1,13 @@
 const express = require("express");
-const groceryRouter = express.Router();
+const recipeIngredientRouter = express.Router();
 
-const Grocery = require("../models/grocery");
+const RecipeIngredient = require("../models/recipeIngredient");
 const authenticate = require("../authenticate");
 
 const cors = require("./cors");
+const { verify } = require("jsonwebtoken");
 
-groceryRouter
+recipeIngredientRouter
   .route("/")
   .all((req, res, next) => {
     res.statusCode = 200;
@@ -16,27 +17,31 @@ groceryRouter
   .options(cors.cors, (req, res) => {
     res.sendStatus(200);
   })
-  .get(cors.cors, authenticate.verifyUser, (req, res) => {
-    Grocery.find()
-      .populate("category")
-      .then((groceries) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(groceries);
-      })
-      .catch((err) => next(err));
-  })
+  .get(
+    cors.cors,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res) => {
+      RecipeIngredient.find()
+        .then((recipeIngredients) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(recipeIngredients);
+        })
+        .catch((err) => next(err));
+    }
+  )
   .post(
     cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.create(req.body)
-        .then((grocery) => {
-          console.log("Grocery Created", grocery);
+      RecipeIngredient.create(req.body)
+        .then((recipeIngredient) => {
+          console.log("RecipeIngredient Created", recipeIngredient);
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          res.json(grocery);
+          res.json(recipeIngredient);
         })
         .catch((err) => {
           console.log(err);
@@ -44,16 +49,16 @@ groceryRouter
         });
     }
   )
-  .put((req, res) => {
+  .put(cors.corsWithOptions, (req, res) => {
     res.statusCode = 403;
-    res.end("PUT operation not supported on /groceries");
+    res.end("PUT operation not supported on /recipe-ingredients");
   })
   .delete(
     cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.deleteMany()
+      RecipeIngredient.deleteMany()
         .then((response) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -63,23 +68,27 @@ groceryRouter
     }
   );
 
-groceryRouter
-  .route("/:groceryId")
-  .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
-    Grocery.findById(req.params.groceryId)
-      .populate("custom_images")
-      .populate("category")
-      .then((grocery) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(grocery);
-      })
-      .catch((err) => next(err));
-  })
+recipeIngredientRouter
+  .route("/:recipeIngredientId")
+  .get(
+    cors.cors,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
+      RecipeIngredient.findById(req.params.recipeIngredientId)
+        .populate("custom_images")
+        .then((recipeIngredient) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(recipeIngredient);
+        })
+        .catch((err) => next(err));
+    }
+  )
   .post(cors.corsWithOptions, (req, res) => {
     res.statusCode = 403;
     res.end(
-      `POST operation not supported on /groceries/${req.params.groceryId}`
+      `POST operation not supported on /recipe-ingredients/${req.params.recipeIngredientId}`
     );
   })
   .put(
@@ -87,17 +96,17 @@ groceryRouter
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.findByIdAndUpdate(
-        req.params.groceryId,
+      RecipeIngredient.findByIdAndUpdate(
+        req.params.recipeIngredientId,
         {
           $set: req.body,
         },
         { new: true }
       )
-        .then((grocery) => {
+        .then((recipeIngredient) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          res.json(grocery);
+          res.json(recipeIngredient);
         })
         .catch((err) => next(err));
     }
@@ -107,7 +116,7 @@ groceryRouter
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.findByIdAndDelete(req.params.groceryId)
+      RecipeIngredient.findByIdAndDelete(req.params.recipeIngredientId)
         .then((response) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -117,4 +126,4 @@ groceryRouter
     }
   );
 
-module.exports = groceryRouter;
+module.exports = recipeIngredientRouter;

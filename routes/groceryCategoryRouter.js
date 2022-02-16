@@ -1,12 +1,12 @@
 const express = require("express");
-const groceryRouter = express.Router();
+const groceryCategoryRouter = express.Router();
 
-const Grocery = require("../models/grocery");
+const GroceryCategory = require("../models/groceryCategory");
 const authenticate = require("../authenticate");
 
 const cors = require("./cors");
 
-groceryRouter
+groceryCategoryRouter
   .route("/")
   .all((req, res, next) => {
     res.statusCode = 200;
@@ -17,12 +17,11 @@ groceryRouter
     res.sendStatus(200);
   })
   .get(cors.cors, authenticate.verifyUser, (req, res) => {
-    Grocery.find()
-      .populate("category")
-      .then((groceries) => {
+    GroceryCategory.find()
+      .then((groceryCategories) => {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        res.json(groceries);
+        res.json(groceryCategories);
       })
       .catch((err) => next(err));
   })
@@ -31,12 +30,12 @@ groceryRouter
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.create(req.body)
-        .then((grocery) => {
-          console.log("Grocery Created", grocery);
+      GroceryCategory.create(req.body)
+        .then((groceryCategory) => {
+          console.log("Grocery Category Created", groceryCategory);
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          res.json(grocery);
+          res.json(groceryCategory);
         })
         .catch((err) => {
           console.log(err);
@@ -44,16 +43,16 @@ groceryRouter
         });
     }
   )
-  .put((req, res) => {
+  .put(cors.corsWithOptions, (req, res) => {
     res.statusCode = 403;
-    res.end("PUT operation not supported on /groceries");
+    res.end("PUT operation not supported on /grocery-categories");
   })
   .delete(
     cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.deleteMany()
+      GroceryCategory.deleteMany()
         .then((response) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -63,23 +62,21 @@ groceryRouter
     }
   );
 
-groceryRouter
-  .route("/:groceryId")
+groceryCategoryRouter
+  .route("/:groceryCategoryId")
   .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
-    Grocery.findById(req.params.groceryId)
-      .populate("custom_images")
-      .populate("category")
-      .then((grocery) => {
+    GroceryCategory.findById(req.params.groceryCategoryId)
+      .then((groceryCategory) => {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        res.json(grocery);
+        res.json(groceryCategory);
       })
       .catch((err) => next(err));
   })
   .post(cors.corsWithOptions, (req, res) => {
     res.statusCode = 403;
     res.end(
-      `POST operation not supported on /groceries/${req.params.groceryId}`
+      `POST operation not supported on /grocery-categories/${req.params.groceryCategoryId}`
     );
   })
   .put(
@@ -87,17 +84,17 @@ groceryRouter
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.findByIdAndUpdate(
-        req.params.groceryId,
+      GroceryCategory.findByIdAndUpdate(
+        req.params.groceryCategoryId,
         {
           $set: req.body,
         },
         { new: true }
       )
-        .then((grocery) => {
+        .then((groceryCategory) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          res.json(grocery);
+          res.json(groceryCategory);
         })
         .catch((err) => next(err));
     }
@@ -107,7 +104,7 @@ groceryRouter
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.findByIdAndDelete(req.params.groceryId)
+      GroceryCategory.findByIdAndDelete(req.params.groceryCategoryId)
         .then((response) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -117,4 +114,4 @@ groceryRouter
     }
   );
 
-module.exports = groceryRouter;
+module.exports = groceryCategoryRouter;

@@ -1,11 +1,10 @@
 const cors = require("cors");
 
 const whitelist = [
+  "http://localhost:3001",
   "http://127.0.0.1:3001",
   "http://127.0.0.1:3000",
   "http://localhost:3000",
-  "http://localhost:3001",
-  "https://cookbookserver.com",
   "https://cookbook7.netlify.app",
 ];
 const corsOptionsDelegate = (req, callback) => {

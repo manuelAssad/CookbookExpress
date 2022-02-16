@@ -1,12 +1,13 @@
 const express = require("express");
-const groceryRouter = express.Router();
+const customImageRouter = express.Router();
 
+const CustomImage = require("../models/customImage");
 const Grocery = require("../models/grocery");
 const authenticate = require("../authenticate");
 
 const cors = require("./cors");
 
-groceryRouter
+customImageRouter
   .route("/")
   .all((req, res, next) => {
     res.statusCode = 200;
@@ -16,27 +17,35 @@ groceryRouter
   .options(cors.cors, (req, res) => {
     res.sendStatus(200);
   })
-  .get(cors.cors, authenticate.verifyUser, (req, res) => {
-    Grocery.find()
-      .populate("category")
-      .then((groceries) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(groceries);
-      })
-      .catch((err) => next(err));
-  })
+  .get(
+    cors.corsWithOptions,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res) => {
+      CustomImage.find()
+        .populate("grocery")
+        .then((customImages) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(customImages);
+        })
+        .catch((err) => next(err));
+    }
+  )
   .post(
     cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.create(req.body)
-        .then((grocery) => {
-          console.log("Grocery Created", grocery);
+      CustomImage.create(req.body)
+        .then((customImage) => {
+          Grocery.findById({ _id: req.body.grocery }).then((grocery) => {
+            grocery.custom_images.push(customImage.id);
+            grocery.save();
+          });
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          res.json(grocery);
+          res.json(customImage);
         })
         .catch((err) => {
           console.log(err);
@@ -44,16 +53,16 @@ groceryRouter
         });
     }
   )
-  .put((req, res) => {
+  .put(cors.corsWithOptions, (req, res) => {
     res.statusCode = 403;
-    res.end("PUT operation not supported on /groceries");
+    res.end("PUT operation not supported on /custom-images");
   })
   .delete(
     cors.corsWithOptions,
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.deleteMany()
+      CustomImage.deleteMany()
         .then((response) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -63,23 +72,21 @@ groceryRouter
     }
   );
 
-groceryRouter
-  .route("/:groceryId")
+customImageRouter
+  .route("/:customImageId")
   .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
-    Grocery.findById(req.params.groceryId)
-      .populate("custom_images")
-      .populate("category")
-      .then((grocery) => {
+    CustomImage.findById(req.params.customImageId)
+      .then((customImage) => {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        res.json(grocery);
+        res.json(customImage);
       })
       .catch((err) => next(err));
   })
   .post(cors.corsWithOptions, (req, res) => {
     res.statusCode = 403;
     res.end(
-      `POST operation not supported on /groceries/${req.params.groceryId}`
+      `POST operation not supported on /custom-images/${req.params.customImageId}`
     );
   })
   .put(
@@ -87,17 +94,17 @@ groceryRouter
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.findByIdAndUpdate(
-        req.params.groceryId,
+      CustomImage.findByIdAndUpdate(
+        req.params.customImageId,
         {
           $set: req.body,
         },
         { new: true }
       )
-        .then((grocery) => {
+        .then((customImage) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          res.json(grocery);
+          res.json(customImage);
         })
         .catch((err) => next(err));
     }
@@ -107,7 +114,7 @@ groceryRouter
     authenticate.verifyUser,
     authenticate.verifyAdmin,
     (req, res, next) => {
-      Grocery.findByIdAndDelete(req.params.groceryId)
+      CustomImage.findByIdAndDelete(req.params.customImageId)
         .then((response) => {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -117,4 +124,4 @@ groceryRouter
     }
   );
 
-module.exports = groceryRouter;
+module.exports = customImageRouter;
