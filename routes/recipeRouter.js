@@ -185,6 +185,7 @@ recipeRouter
     res.end(`POST operation not supported on /recipes/${req.params.recipeId}`);
   })
   .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
+    console.log(req.body);
     Recipe.findById(req.params.recipeId)
       .then((recipe) => {
         if (req.user.admin) {
@@ -222,7 +223,7 @@ recipeRouter
               }
 
               const ingredientsList = req.body.ingredients;
-              const recipeStepsList = req.body.prep_steps;
+              const recipeStepsList = req.body.prepSteps;
 
               const newIngredientsList = [];
               const newPrepStepsList = [];
@@ -248,30 +249,24 @@ recipeRouter
                 );
               }
 
-              if (recipeStepsList)
-                recipeStepsList.forEach((recipe) => {
-                  if (recipe._id) {
-                    promises.push(
-                      RecipePrepStep.findByIdAndUpdate(
-                        recipe.id,
-                        {
-                          $set: recipe,
-                        },
-                        { new: true }
-                      )
-                        .then((recipe) => {
-                          newPrepStepsList.push(recipe);
-                        })
-                        .catch((err) => next(err))
-                    );
-                  } else {
-                    promises.push(
-                      RecipePrepStep.create(recipe).then((recipe) => {
-                        newPrepStepsList.push(recipe);
-                      })
-                    );
-                  }
-                });
+              if (recipeStepsList) {
+                promises.push(
+                  RecipePrepStep.deleteMany({ recipe: recipe._id }).then(
+                    (response) => {
+                      recipeStepsList.forEach((prepStep) => {
+                        promises.push(
+                          RecipePrepStep.create({
+                            ...prepStep,
+                            recipe: recipe._id,
+                          }).then((prepStep) => {
+                            newPrepStepsList.push(prepStep);
+                          })
+                        );
+                      });
+                    }
+                  )
+                );
+              }
 
               const response = {};
               Promise.all(promises).then(() => {
@@ -328,7 +323,7 @@ recipeRouter
               }
 
               const ingredientsList = req.body.ingredients;
-              const recipeStepsList = req.body.prep_steps;
+              const recipeStepsList = req.body.prepSteps;
 
               const newIngredientsList = [];
               const newPrepStepsList = [];
@@ -354,30 +349,24 @@ recipeRouter
                 );
               }
 
-              if (recipeStepsList)
-                recipeStepsList.forEach((recipe) => {
-                  if (recipe._id) {
-                    promises.push(
-                      RecipePrepStep.findByIdAndUpdate(
-                        recipe.id,
-                        {
-                          $set: recipe,
-                        },
-                        { new: true }
-                      )
-                        .then((recipe) => {
-                          newPrepStepsList.push(recipe);
-                        })
-                        .catch((err) => next(err))
-                    );
-                  } else {
-                    promises.push(
-                      RecipePrepStep.create(recipe).then((recipe) => {
-                        newPrepStepsList.push(recipe);
-                      })
-                    );
-                  }
-                });
+              if (recipeStepsList) {
+                promises.push(
+                  RecipePrepStep.deleteMany({ recipe: recipe._id }).then(
+                    (response) => {
+                      recipeStepsList.forEach((prepStep) => {
+                        promises.push(
+                          RecipePrepStep.create({
+                            ...prepStep,
+                            recipe: recipe._id,
+                          }).then((prepStep) => {
+                            newPrepStepsList.push(prepStep);
+                          })
+                        );
+                      });
+                    }
+                  )
+                );
+              }
 
               const response = {};
               Promise.all(promises).then(() => {
